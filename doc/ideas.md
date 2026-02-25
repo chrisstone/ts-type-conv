@@ -19,3 +19,10 @@ Evaluate switching the current hand-written lexer and recursive-descent parser t
 * **Objective**: Replace the manual parsing logic with industry-standard tooling constructed from formal context-free grammar constraints, enabling faster iterations on complex TypeScript definitions.
 * **Implementation**: Introduce `.l` and `.y` files defining the TypeScript lexical boundaries and grammar rules, modifying `CMakeLists.txt` to fetch or utilize `Flex`/`Bison` generation steps prior to compiling the C++ executable. Wrap outputs elegantly to construct the existing `ast::node` architecture.
 * **Effort Estimate**: High (~3-4 days). While rewriting the lexer (`.l`) is straightforward (Low-Medium effort), rewriting the parser (`.y`) to construct the AST requires a complete translation of the TS grammar subset. Furthermore, cross-platform build configurations (CMake/MSVC) will require significant adjustments to seamlessly support `winflexbison`.
+
+### Review AST from microsoft/typescript-go
+
+Evaluate the AST implementation in the `microsoft/typescript-go` repository (Project Corsa) to identify potential improvements for the `ts-type-conv` AST.
+
+* **Objective**: Gain insights from a native Go implementation of the TypeScript compiler to optimize and refine the AST structure and performance in `ts-type-conv`.
+* **Details**: Microsoft is actively developing a native port of the TypeScript compiler in Go to improve performance, memory usage, and build times. By examining their AST parsing and representation techniques, we might find valuable architectural patterns or optimizations applicable to our C++ implementation.

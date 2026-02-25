@@ -399,6 +399,8 @@ static ast::object* parse_object(lexer& lex)
         case token::keyword_unknown:
         case token::keyword_never:
         case token::identifier:
+        case token::string:
+        case token::number_literal:
         {
             auto member = std::make_unique<ast::member>();
             member->name.swap(lex.string_value);
@@ -490,17 +492,29 @@ static ast::interface* parse_interface(lexer& lex)
     if (lex.current_token == token::keyword_extends)
     {
         lex.advance();
-        if (lex.current_token != token::identifier)
+        while (true)
         {
-            std::printf("ERROR: Unexpected token '%s' while parsing 'extends' type for interface '%s'; expected an identifier\n", lex.string_value.c_str(), result->name.c_str());
-            return nullptr;
-        }
+            if (lex.current_token != token::identifier)
+            {
+                std::printf("ERROR: Unexpected token '%s' while parsing 'extends' type for interface '%s'; expected an identifier\n", lex.string_value.c_str(), result->name.c_str());
+                return nullptr;
+            }
 
-        auto baseRef = std::make_unique<ast::interface_reference>();
-        baseRef->name.swap(lex.string_value);
-        result->base = baseRef.get();
-        lex.file->nodes.push_back(std::move(baseRef));
-        lex.advance();
+            auto baseRef = std::make_unique<ast::interface_reference>();
+            baseRef->name.swap(lex.string_value);
+            result->base.push_back(baseRef.get());
+            lex.file->nodes.push_back(std::move(baseRef));
+            lex.advance();
+
+            if (lex.current_token == token::comma)
+            {
+                lex.advance();
+            }
+            else
+            {
+                break;
+            }
+        }
     }
 
     if (lex.current_token != token::open_curly)

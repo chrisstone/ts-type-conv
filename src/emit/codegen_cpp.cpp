@@ -37,13 +37,26 @@ static void generate_object_body(codegen_state& state, ast::object* obj)
     state.out << "{\n";
     for (auto* member : obj->named_members)
     {
+        std::string type_str;
+        codegen_state temp_state(state.config);
+        temp_state.known_nodes = state.known_nodes;
+        generate_type(temp_state, member->type);
+        type_str = temp_state.out.str();
+
+        if (type_str.find("std::any /*") != std::string::npos &&
+            type_str != "std::any /* unknown */" &&
+            type_str != "std::any /* never */") {
+            continue;
+        }
+
         state.out << "    ";
         if (member->is_optional) {
             state.add_header("#include <optional>");
-            state.out << "std::optional<";
+            state.out << "std::optional<" << type_str << ">";
+        } else {
+            state.out << type_str;
         }
-        generate_type(state, member->type);
-        if (member->is_optional) state.out << ">";
+        for (const auto& h : temp_state.headers) state.add_header(h);
         state.out << " " << member->name << ";\n";
     }
     state.out << "}";
@@ -52,10 +65,15 @@ static void generate_object_body(codegen_state& state, ast::object* obj)
 static void generate_interface(codegen_state& state, ast::interface* iface)
 {
     state.out << "struct " << iface->name;
-    if (iface->base)
+    if (!iface->base.empty())
     {
-        state.out << " : public ";
-        generate_type(state, iface->base);
+        state.out << " : ";
+        for (size_t i = 0; i < iface->base.size(); ++i)
+        {
+            if (i > 0) state.out << ", ";
+            state.out << "public ";
+            generate_type(state, iface->base[i]);
+        }
     }
     state.out << "\n";
     if (iface->definition)
@@ -79,8 +97,8 @@ static bool collect_members(codegen_state& state, ast::node* type, std::vector<a
         }
         return false;
     } else if (auto* iface = dynamic_cast<ast::interface*>(type)) {
-        if (iface->base) {
-            if (!collect_members(state, iface->base, members)) return false;
+        for (auto* b : iface->base) {
+            if (!collect_members(state, b, members)) return false;
         }
         if (iface->definition) {
             for (auto* m : iface->definition->named_members) members.push_back(m);
@@ -274,9 +292,21 @@ static void generate_type_alias(codegen_state& state, ast::type_alias* alias)
         return;
     }
 
-    state.out << "using " << alias->name << " = ";
-    generate_type(state, alias->target_type);
-    state.out << ";\n\n";
+    std::string type_str;
+    {
+        codegen_state temp_state(state.config);
+        temp_state.known_nodes = state.known_nodes;
+        generate_type(temp_state, alias->target_type);
+        type_str = temp_state.out.str();
+
+        if (type_str.find("std::any /*") != std::string::npos &&
+            type_str != "std::any /* unknown */" &&
+            type_str != "std::any /* never */") {
+            return;
+        }
+        for (const auto& h : temp_state.headers) state.add_header(h);
+    }
+    state.out << "using " << alias->name << " = " << type_str << ";\n\n";
 }
 
 static void generate_enum(codegen_state& state, ast::enumeration* en)

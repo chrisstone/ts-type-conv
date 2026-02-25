@@ -50,7 +50,7 @@ namespace ast
     struct interface : node
     {
         bool is_export = false;
-        node* base = nullptr;
+        std::vector<node*> base;
         std::string name;
         object* definition = nullptr;
     };
