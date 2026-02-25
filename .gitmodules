@@ -1,0 +1,3 @@
+[submodule "contrib/tomlplusplus"]
+	path = contrib/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus.git

@@ -1,0 +1,23 @@
+name: Test Pull Requests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Build Script
+      run: |
+        gh pr checkout ${{GITHUB_REF}} --recurse-submodules
+        bash ./build.sh
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v6
+      with:
+        name: test-results
+        path: build/test.xml

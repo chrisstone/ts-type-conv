@@ -1,0 +1,4 @@
+format = "cpp"
+
+[cpp]
+enum = "withArray"
