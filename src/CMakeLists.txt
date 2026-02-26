@@ -4,6 +4,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     lexer.cpp
     main.cpp
     parser.cpp
+    config.cpp
     emit/codegen_cpp.cpp
     emit/codegen_proto.cpp)
 
