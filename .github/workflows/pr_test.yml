@@ -13,7 +13,7 @@ jobs:
 
     - name: Run Build Script
       run: |
-        gh pr checkout ${{GITHUB_REF}} --recurse-submodules
+        gh pr checkout ${{ github.ref }} --recurse-submodules
         bash ./build.sh
 
     - name: Upload Test Results
